@@ -11,7 +11,7 @@ final client = JanzeerClient('https://node.example.org');   // '/api/v1/' is app
 ## Node
 
 ```dart
-await client.info();          // { nodeKey, host, port }
+await client.info();          // { nodeKey, host, port, networkId, genesisHash, chainSpecDigest, version, apiVersion, protocolVersion, syncStatus, faucet }
 await client.version();       // { version: '0.0.2', protocolVersion: '1.1.0' }
 await client.uptime();        // ms
 await client.explorerInfo();  // counts, TPS, epoch, supply

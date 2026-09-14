@@ -24,9 +24,13 @@ void main() {
     final acct = Account.fromMnemonic(mnemonic); // 1
     expect(acct.address, '0x06e1c0fa9955a700876f8cb0acc7f13fba9fb8ba');
 
-    final v = await client.version(); // 2
-    expect(v.version, SpecVersion.node);
+    final info = await client.info(); // 2: version + network gate
+    expect(info.version, SpecVersion.node);
     expect(client.lastEnvelope?.version, SpecVersion.api);
+    final networkId = info.networkId;
+    final expectedNet = Platform.environment['JANZEER_NETWORK_ID'];
+    if (expectedNet != null) expect(networkId, expectedNet);
+    expect(info.genesisHash, matches(RegExp(r'^[0-9a-f]{64}$')));
 
     final a0 = await rpc.getAccount(acct.address); // 3
     expect(compareAmounts(a0.balance, '0'), 1);
@@ -43,7 +47,7 @@ void main() {
         amount: '1.25',
         fee: '0.01',
         data: 'sdk-e2e-dart',
-        nonce: nonce)); // 5
+        nonce: nonce, networkId: networkId)); // 5
     expect(acct.verify(tx.hash, tx.signature), isTrue);
 
     final submitted = await client.submit(tx); // 6
@@ -80,7 +84,7 @@ void main() {
         from: acct.address,
         to: recipient,
         amount: '1',
-        nonce: nonce + 10)); // 12
+        nonce: nonce + 10, networkId: networkId)); // 12
     await expectLater(
         client.submit(gap),
         throwsA(isA<NonceMismatchException>()
@@ -93,9 +97,9 @@ void main() {
 
     final next = await client.nonce(acct.address); // 13
     final good = acct.signTx(TxBuilder.transfer(
-        from: acct.address, to: recipient, amount: '1', nonce: next));
+        from: acct.address, to: recipient, amount: '1', nonce: next, networkId: networkId));
     final forged = TxBuilder.transfer(
-            from: acct.address, to: recipient, amount: '2', nonce: next)
+            from: acct.address, to: recipient, amount: '2', nonce: next, networkId: networkId)
         .withSignature(good.signature, acct.publicKeyHex);
     await expectLater(
         client.submit(forged),

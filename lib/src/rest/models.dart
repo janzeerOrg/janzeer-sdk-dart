@@ -2,6 +2,7 @@
 /// Mappers take the lossless JSON tree so no precision is lost on the way in.
 library;
 
+import '../constants.dart' as c;
 import '../constants.dart';
 import '../json.dart';
 
@@ -86,17 +87,61 @@ class NodeInfo {
   /// P2P port
   final int port;
 
+  /// `consensus.network-id` — pass it as `networkId` to every builder on a non-mainnet node.
+  final String networkId;
+
+  /// Hash of the epoch-1 genesis block: the chain's identity.
+  final String genesisHash;
+
+  /// Consensus rule-set + genesis digest exchanged in the P2P handshake.
+  final String chainSpecDigest;
+
+  /// Node software version.
+  final String version;
+
+  /// REST/JSON-RPC API version.
+  final String apiVersion;
+
+  /// P2P wire protocol version.
+  final String protocolVersion;
+
+  /// `SYNCHRONIZED`, `PROCESSING` or `NOT_SYNCHRONIZED`.
+  final String syncStatus;
+
+  /// True when the node runs a testnet faucet (`POST /api/v1/faucet`).
+  final bool faucet;
+
   /// Construct.
   const NodeInfo(
-      {required this.nodeKey, required this.host, required this.port});
+      {required this.nodeKey,
+      required this.host,
+      required this.port,
+      this.networkId = c.networkId,
+      this.genesisHash = '',
+      this.chainSpecDigest = '',
+      this.version = '',
+      this.apiVersion = '',
+      this.protocolVersion = '',
+      this.syncStatus = '',
+      this.faucet = false});
 
   /// Map.
   factory NodeInfo.fromJson(Object? v) {
     final o = asObject(v);
+    String opt(String k) => o[k] == null ? '' : asString(o[k]);
     return NodeInfo(
         nodeKey: asString(o['nodeKey'], 'nodeKey'),
         host: asString(o['host']),
-        port: asInt(o['port']));
+        port: asInt(o['port']),
+        // fields added by node 0.0.3 — tolerate an older node
+        networkId: o['networkId'] == null ? c.networkId : asString(o['networkId']),
+        genesisHash: opt('genesisHash'),
+        chainSpecDigest: opt('chainSpecDigest'),
+        version: opt('version'),
+        apiVersion: opt('apiVersion'),
+        protocolVersion: opt('protocolVersion'),
+        syncStatus: opt('syncStatus'),
+        faucet: o['faucet'] == true);
   }
 }
 
