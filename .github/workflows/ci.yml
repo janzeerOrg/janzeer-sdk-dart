@@ -1,0 +1,42 @@
+name: ci
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      e2e:
+        description: run the e2e flow against JANZEER_NODE_URL (repository secrets)
+        type: boolean
+        default: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [stable, beta]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: dart pub get
+      - run: dart format --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
+      - run: dart test
+      - run: dart doc
+      - run: dart pub publish --dry-run
+  e2e:
+    if: github.event_name == 'workflow_dispatch' && inputs.e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart test --tags e2e test/e2e
+        env:
+          JANZEER_NODE_URL: ${{ secrets.JANZEER_NODE_URL }}
+          JANZEER_RPC_URL: ${{ secrets.JANZEER_RPC_URL }}
+          JANZEER_WS_URL: ${{ secrets.JANZEER_WS_URL }}
+          JANZEER_E2E_MNEMONIC: ${{ secrets.JANZEER_E2E_MNEMONIC }}
+          JANZEER_E2E_RECIPIENT: ${{ secrets.JANZEER_E2E_RECIPIENT }}

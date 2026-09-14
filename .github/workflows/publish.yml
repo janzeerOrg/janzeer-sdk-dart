@@ -1,0 +1,10 @@
+name: publish
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+jobs:
+  publish:
+    # pub.dev automated publishing (enable it for the package on pub.dev, pointing at this repository)
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
