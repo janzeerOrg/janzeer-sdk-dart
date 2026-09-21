@@ -129,11 +129,11 @@ void main() {
   });
   test('info carries the chain identity and tolerates an older node', () async {
     var c = JanzeerClient('http://node:7019',
-        httpClient: MockClient((r) async => http.Response(env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199,"networkId":"janzeer-testnet","genesisHash":"88bae6976718ea46f7ca92655df5743a3d46b9267c66670579c065138c8ee910","chainSpecDigest":"cc","version":"0.0.3","apiVersion":"1.1.0","protocolVersion":"3.2.0","syncStatus":"SYNCHRONIZED","faucet":true}')), 200)));
+        httpClient: MockClient((r) async => http.Response(env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199,"networkId":"janzeer-testnet","genesisHash":"88bae6976718ea46f7ca92655df5743a3d46b9267c66670579c065138c8ee910","chainSpecDigest":"cc","version":"0.1.0","apiVersion":"1.1.0","protocolVersion":"3.2.0","syncStatus":"SYNCHRONIZED","faucet":true}')), 200)));
     final info = await c.info();
     expect(info.networkId, 'janzeer-testnet');
     expect(info.genesisHash, matches(RegExp(r'^[0-9a-f]{64}$')));
-    expect(info.version, '0.0.3');
+    expect(info.version, '0.1.0');
     expect(info.faucet, isTrue);
     c = JanzeerClient('http://node:7019',
         httpClient: MockClient((r) async => http.Response(env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199}')), 200)));

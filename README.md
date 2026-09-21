@@ -62,7 +62,7 @@ cryptography is pure Dart (`pointycastle`).
 
 | SDK | Node | REST envelope `version` | Wire protocol | Vectors |
 |---|---|---|---|---|
-| 0.1.x | 0.0.3 | 1.1.0 | 3.2.0 | v2 |
+| 0.1.x | 0.1.0 | 1.1.0 | 3.4.0 | v2 |
 
 `SpecVersion` carries these values; the e2e test checks them against the node on the first call.
 
