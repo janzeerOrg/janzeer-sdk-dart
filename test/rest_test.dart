@@ -154,4 +154,23 @@ void main() {
     expect(await c.uptime(), 42);
     expect(n, 2);
   });
+
+  test('follows one redirect for POST too (http → https behind nginx)', () async {
+    // package:http follows redirects only for GET/HEAD; a base URL typed as http:// in front of an https-only
+    // node answered 301 to every POST — the Flutter wallet's "request failed 301" (online test 2026-09-23).
+    final seen = <String>[];
+    final c = JanzeerClient('http://node.example', httpClient: MockClient((r) async {
+      seen.add('${r.method} ${r.url}');
+      if (r.url.scheme == 'http') {
+        return http.Response('', 301, headers: {'location': r.url.replace(scheme: 'https').toString()});
+      }
+      expect(r.method, 'POST');
+      expect(jsonDecode(r.body), {'x': 1});
+      return http.Response(jsonEncode({'timestamp': 1, 'version': '1', 'payload': {'ok': true}}), 200,
+          headers: {'content-type': 'application/json'});
+    }));
+    final r = await c.post('transactions/transfers', {'x': 1});
+    expect(r, {'ok': true});
+    expect(seen, ['POST http://node.example/api/v1/transactions/transfers', 'POST https://node.example/api/v1/transactions/transfers']);
+  });
 }

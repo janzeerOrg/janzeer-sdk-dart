@@ -87,8 +87,13 @@ class JanzeerClient {
 
   Future<Object?> _request(
       String method, String path, Object? body, Object? notFound,
+      [int attempt = 0]) =>
+      _requestAt(baseUrl, method, path, body, notFound, attempt);
+
+  Future<Object?> _requestAt(String base, String method, String path,
+      Object? body, Object? notFound,
       [int attempt = 0]) async {
-    final uri = Uri.parse(baseUrl + path.replaceFirst(RegExp('^/'), ''));
+    final uri = Uri.parse(base + path.replaceFirst(RegExp('^/'), ''));
     http.Response res;
     try {
       final req = http.Request(method, uri)..headers.addAll(_headers);
@@ -105,6 +110,19 @@ class JanzeerClient {
     } on http.ClientException catch (e) {
       throw NetworkException(
           'Cannot reach the node at $baseUrl: ${e.message}', e);
+    }
+    // Follow ONE redirect for every method. package:http only follows redirects for GET/HEAD, so a base URL
+    // like `http://node.example/api/v1/` behind an http→https redirect read fine but every POST (transfers!)
+    // failed with a bare 301 (Flutter wallet, online test 2026-09-23). The node's API never redirects itself, so a
+    // redirect always means "same API, other scheme/host": re-issue the same request there, once.
+    final location = res.headers['location'];
+    if (attempt == 0 &&
+        location != null &&
+        const {301, 302, 307, 308}.contains(res.statusCode)) {
+      final target = uri.resolve(location);
+      final tail = RegExp.escape(path.replaceFirst(RegExp('^/'), ''));
+      final base = target.toString().replaceFirst(RegExp('/*$tail\$'), '/');
+      return _requestAt(base, method, path, body, notFound, 1);
     }
     if (res.statusCode == 404 && !identical(notFound, _noDefault)) {
       return notFound;
