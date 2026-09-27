@@ -134,7 +134,8 @@ class NodeInfo {
         host: asString(o['host']),
         port: asInt(o['port']),
         // fields added by node 0.0.3 — tolerate an older node
-        networkId: o['networkId'] == null ? c.networkId : asString(o['networkId']),
+        networkId:
+            o['networkId'] == null ? c.networkId : asString(o['networkId']),
         genesisHash: opt('genesisHash'),
         chainSpecDigest: opt('chainSpecDigest'),
         version: opt('version'),

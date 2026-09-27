@@ -21,7 +21,9 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
       - run: dart pub get
-      - run: dart format --set-exit-if-changed .
+      # the formatter's style can differ between channels: the stable channel is the reference
+      - if: matrix.sdk == 'stable'
+        run: dart format --set-exit-if-changed .
       - run: dart analyze --fatal-infos
       - run: dart test
       - run: dart doc

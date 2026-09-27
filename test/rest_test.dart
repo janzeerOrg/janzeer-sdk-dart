@@ -129,14 +129,18 @@ void main() {
   });
   test('info carries the chain identity and tolerates an older node', () async {
     var c = JanzeerClient('http://node:7019',
-        httpClient: MockClient((r) async => http.Response(env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199,"networkId":"janzeer-testnet","genesisHash":"88bae6976718ea46f7ca92655df5743a3d46b9267c66670579c065138c8ee910","chainSpecDigest":"cc","version":"0.1.0","apiVersion":"1.1.0","protocolVersion":"3.2.0","syncStatus":"SYNCHRONIZED","faucet":true}')), 200)));
+        httpClient: MockClient((r) async => http.Response(
+            env(jsonDecode(
+                '{"nodeKey":"02ab","host":"","port":9199,"networkId":"janzeer-testnet","genesisHash":"88bae6976718ea46f7ca92655df5743a3d46b9267c66670579c065138c8ee910","chainSpecDigest":"cc","version":"0.1.0","apiVersion":"1.1.0","protocolVersion":"3.2.0","syncStatus":"SYNCHRONIZED","faucet":true}')),
+            200)));
     final info = await c.info();
     expect(info.networkId, 'janzeer-testnet');
     expect(info.genesisHash, matches(RegExp(r'^[0-9a-f]{64}$')));
     expect(info.version, '0.1.0');
     expect(info.faucet, isTrue);
     c = JanzeerClient('http://node:7019',
-        httpClient: MockClient((r) async => http.Response(env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199}')), 200)));
+        httpClient: MockClient((r) async => http.Response(
+            env(jsonDecode('{"nodeKey":"02ab","host":"","port":9199}')), 200)));
     final old = await c.info();
     expect(old.networkId, 'janzeer');
     expect(old.faucet, isFalse);
@@ -155,22 +159,34 @@ void main() {
     expect(n, 2);
   });
 
-  test('follows one redirect for POST too (http → https behind nginx)', () async {
+  test('follows one redirect for POST too (http → https behind nginx)',
+      () async {
     // package:http follows redirects only for GET/HEAD; a base URL typed as http:// in front of an https-only
     // node answered 301 to every POST — the Flutter wallet's "request failed 301" (online test 2026-09-23).
     final seen = <String>[];
-    final c = JanzeerClient('http://node.example', httpClient: MockClient((r) async {
+    final c =
+        JanzeerClient('http://node.example', httpClient: MockClient((r) async {
       seen.add('${r.method} ${r.url}');
       if (r.url.scheme == 'http') {
-        return http.Response('', 301, headers: {'location': r.url.replace(scheme: 'https').toString()});
+        return http.Response('', 301,
+            headers: {'location': r.url.replace(scheme: 'https').toString()});
       }
       expect(r.method, 'POST');
       expect(jsonDecode(r.body), {'x': 1});
-      return http.Response(jsonEncode({'timestamp': 1, 'version': '1', 'payload': {'ok': true}}), 200,
+      return http.Response(
+          jsonEncode({
+            'timestamp': 1,
+            'version': '1',
+            'payload': {'ok': true}
+          }),
+          200,
           headers: {'content-type': 'application/json'});
     }));
     final r = await c.post('transactions/transfers', {'x': 1});
     expect(r, {'ok': true});
-    expect(seen, ['POST http://node.example/api/v1/transactions/transfers', 'POST https://node.example/api/v1/transactions/transfers']);
+    expect(seen, [
+      'POST http://node.example/api/v1/transactions/transfers',
+      'POST https://node.example/api/v1/transactions/transfers'
+    ]);
   });
 }

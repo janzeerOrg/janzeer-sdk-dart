@@ -47,7 +47,8 @@ void main() {
         amount: '1.25',
         fee: '0.01',
         data: 'sdk-e2e-dart',
-        nonce: nonce, networkId: networkId)); // 5
+        nonce: nonce,
+        networkId: networkId)); // 5
     expect(acct.verify(tx.hash, tx.signature), isTrue);
 
     final submitted = await client.submit(tx); // 6
@@ -84,7 +85,8 @@ void main() {
         from: acct.address,
         to: recipient,
         amount: '1',
-        nonce: nonce + 10, networkId: networkId)); // 12
+        nonce: nonce + 10,
+        networkId: networkId)); // 12
     await expectLater(
         client.submit(gap),
         throwsA(isA<NonceMismatchException>()
@@ -97,9 +99,17 @@ void main() {
 
     final next = await client.nonce(acct.address); // 13
     final good = acct.signTx(TxBuilder.transfer(
-        from: acct.address, to: recipient, amount: '1', nonce: next, networkId: networkId));
+        from: acct.address,
+        to: recipient,
+        amount: '1',
+        nonce: next,
+        networkId: networkId));
     final forged = TxBuilder.transfer(
-            from: acct.address, to: recipient, amount: '2', nonce: next, networkId: networkId)
+            from: acct.address,
+            to: recipient,
+            amount: '2',
+            nonce: next,
+            networkId: networkId)
         .withSignature(good.signature, acct.publicKeyHex);
     await expectLater(
         client.submit(forged),

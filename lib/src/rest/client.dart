@@ -86,12 +86,12 @@ class JanzeerClient {
       _request('POST', path, body, _noDefault);
 
   Future<Object?> _request(
-      String method, String path, Object? body, Object? notFound,
-      [int attempt = 0]) =>
+          String method, String path, Object? body, Object? notFound,
+          [int attempt = 0]) =>
       _requestAt(baseUrl, method, path, body, notFound, attempt);
 
-  Future<Object?> _requestAt(String base, String method, String path,
-      Object? body, Object? notFound,
+  Future<Object?> _requestAt(
+      String base, String method, String path, Object? body, Object? notFound,
       [int attempt = 0]) async {
     final uri = Uri.parse(base + path.replaceFirst(RegExp('^/'), ''));
     http.Response res;
