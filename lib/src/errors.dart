@@ -76,9 +76,9 @@ class NonceMismatchException extends TxRejectedException {
 
   /// Construct.
   const NonceMismatchException(String message, this.address, this.expected,
-      this.got, Transport transport, {int? httpStatus, int? rpcCode})
-      : super(message, 'INVALID_NONCE', transport,
-            httpStatus: httpStatus, rpcCode: rpcCode);
+      this.got, Transport transport,
+      {super.httpStatus, super.rpcCode})
+      : super(message, 'INVALID_NONCE', transport);
 
   /// Build from a node message; `null` when the message is not a nonce mismatch.
   static NonceMismatchException? fromMessage(
