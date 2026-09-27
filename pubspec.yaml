@@ -2,7 +2,8 @@ name: janzeer_sdk
 description: Official Dart SDK for the Janzeer blockchain - wallet keys and signing, transaction builders, typed REST client, JSON-RPC over HTTP and WebSocket subscriptions. Pure Dart; Flutter-friendly.
 version: 0.1.1
 homepage: https://janzeer.org
-repository: https://github.com/janzeer/janzeer-sdk-dart
+repository: https://github.com/janzeerorg/janzeer-sdk-dart
+issue_tracker: https://github.com/janzeerorg/janzeer-sdk-dart/issues
 topics: [blockchain, wallet, secp256k1, json-rpc, janzeer]
 
 environment:
