@@ -12,6 +12,15 @@ construction: keys never leave your process, the node only verifies.
 dart pub add janzeer_sdk        # or: flutter pub add janzeer_sdk
 ```
 
+> **Not on pub.dev yet.** The package follows shortly after the mainnet launch. Until then, depend on the repository
+> in `pubspec.yaml`:
+>
+> ```yaml
+> dependencies:
+>   janzeer_sdk:
+>     git: https://github.com/janzeerorg/janzeer-sdk-dart
+> ```
+
 ## 60-second quickstart
 
 ```dart
