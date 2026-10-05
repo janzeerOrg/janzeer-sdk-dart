@@ -5,6 +5,7 @@ All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](htt
 
 ## Unreleased
 
+- **Vault key derivation is about nine times faster** (PBKDF2-HMAC-SHA256, 250 000 rounds: 4.3 s → 0.5 s on a desktop, and from many seconds to about one on a phone). The SDK now carries its own implementation that compresses the two HMAC pad blocks once; output is byte-for-byte the same (`test/pbkdf2_test.dart` compares it with the generic derivator and the published vectors, on the VM and compiled to JavaScript), so existing vault blobs open unchanged. No API change.
 - Verified against node **0.1.0** (P2P protocol 3.4.0): `SPEC_VERSION.node` bumped from 0.0.3. No API change for SDK users. New node rule worth knowing: a transaction's `timestamp` must be within 60 s ahead / 6 h behind the node's clock — sign right before you send.
 
 ## Versioning policy

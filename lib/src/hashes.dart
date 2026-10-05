@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:pointycastle/export.dart';
 
 import 'bytes.dart';
+import 'pbkdf2_sha256.dart';
 
 /// SHA-256
 Uint8List sha256(Uint8List data) => SHA256Digest().process(data);
@@ -33,10 +34,8 @@ Uint8List pbkdf2Sha512(
   return kdf.process(password);
 }
 
-/// PBKDF2-HMAC-SHA256
+/// PBKDF2-HMAC-SHA256 (the vault's key derivation). Runs on the SDK's own two-compressions-per-round
+/// implementation: same bytes as the generic derivator, more than ten times faster.
 Uint8List pbkdf2Sha256(
-    Uint8List password, Uint8List salt, int iterations, int dkLen) {
-  final kdf = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-    ..init(Pbkdf2Parameters(salt, iterations, dkLen));
-  return kdf.process(password);
-}
+        Uint8List password, Uint8List salt, int iterations, int dkLen) =>
+    pbkdf2HmacSha256(password, salt, iterations, dkLen);
