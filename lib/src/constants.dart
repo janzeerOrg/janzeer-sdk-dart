@@ -34,7 +34,7 @@ class SpecVersion {
   SpecVersion._();
 
   /// `GET info/version` → `version`
-  static const String node = '0.1.7';
+  static const String node = '0.1.8';
 
   /// REST envelope `version` and JSON-RPC `apiVersion`
   static const String api = '1.1.0';
