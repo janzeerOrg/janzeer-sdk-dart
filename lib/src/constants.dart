@@ -40,7 +40,7 @@ class SpecVersion {
   static const String api = '1.1.0';
 
   /// peer-to-peer wire protocol (informational)
-  static const String protocol = '3.2.0';
+  static const String protocol = '3.4.0';
 
   /// conformance vectors format consumed by this SDK's tests
   static const int vectors = 2;
