@@ -3,7 +3,9 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
-## Unreleased
+## 0.1.2 — 2026-10-28
+
+First release on pub.dev (`dart pub add janzeer_sdk`). Verified against node **0.1.10** (API 1.1.0 / protocol 3.4.0).
 
 - `SpecVersion.protocol` now says **3.4.0**, the wire protocol the node has run since 0.1.0 (it was left at 3.2.0; informational only).
 
