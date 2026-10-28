@@ -3,6 +3,14 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
+## 0.1.3 — 2026-10-28
+
+pub.dev housekeeping, no code change.
+
+- `pointycastle` constraint widened to `>=3.9.1 <5.0.0` (4.0.0 has no breaking change for the APIs this SDK uses; the resolved version is still
+  decided by `bip39`, which pins 3.x).
+- `example/README.md` indexes the five runnable programs (pub.dev's Example tab); shorter pubspec description.
+
 ## 0.1.2 — 2026-10-28
 
 First release on pub.dev (`dart pub add janzeer_sdk`). Verified against node **0.1.10** (API 1.1.0 / protocol 3.4.0).
