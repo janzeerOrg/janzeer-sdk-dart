@@ -3,6 +3,19 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
+## 0.1.4 — 2026-10-31
+
+No API change; dependency and correctness release.
+
+- **The `bip39` package is gone.** The SDK now carries its own BIP39 word encoding (`lib/src/bip39.dart`, English wordlist copied from the
+  reference `english.txt`, SHA-256 checksum) and is tested against the 24 reference vectors of trezor/python-mnemonic
+  (`test/mnemonic_test.dart`). `Mnemonic.generate / validate / fromEntropy / toEntropy` behave exactly as before. Only the word encoding is
+  BIP39; the seed stays Janzeer's own (`Mnemonic.toSeed`).
+- Consequence: `pointycastle` now resolves to **4.0.0** (the dropped package pinned 3.x), and the transitive `hex` and `crypto` runtime
+  dependencies disappear.
+- Fix inherited from the replaced package: its random entropy drew each byte with `nextInt(255)`, so the byte value 0xff never occurred in a
+  generated phrase (one bit of entropy lost per byte in theory). Generation now uses the full 0–255 range. Existing phrases are unaffected.
+
 ## 0.1.3 — 2026-10-28
 
 pub.dev housekeeping, no code change.
