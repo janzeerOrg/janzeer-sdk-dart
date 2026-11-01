@@ -3,6 +3,11 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
+## 0.1.5 — 2026-11-01
+
+No API change. `SpecVersion.node` is **0.1.11** (node maintenance release: the `jz` command-line client ships in the node bundle;
+`GET /info/version` now returns `version`, `apiVersion` and `protocolVersion` like `/info`; API 1.1.0 / protocol 3.4.0 unchanged).
+
 ## 0.1.4 — 2026-10-31
 
 No API change; dependency and correctness release.
