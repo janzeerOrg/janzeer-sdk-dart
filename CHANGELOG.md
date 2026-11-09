@@ -3,6 +3,10 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
+## 0.1.6 — 2026-11-09
+
+No API change. `SpecVersion.node` is **0.1.12** (node critical fix F-058: GraalVM native nodes could not sync across a block carrying a token transaction, fixed in 0.1.12 with a build-time guard; API 1.1.0 / protocol 3.4.0 unchanged).
+
 ## 0.1.5 — 2026-11-01
 
 No API change. `SpecVersion.node` is **0.1.11** (node maintenance release: the `jz` command-line client ships in the node bundle;
