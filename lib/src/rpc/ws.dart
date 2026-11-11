@@ -362,7 +362,8 @@ class JanzeerRpcWs extends RpcMethods {
     var count = 0;
     var failed = 0;
     for (final s in old) {
-      if (!s.stale || !identical(_subs[s.id], s)) continue; // unsubscribed meanwhile, or done by a parallel pass
+      if (!s.stale || !identical(_subs[s.id], s))
+        continue; // unsubscribed meanwhile, or done by a parallel pass
       try {
         final id = asString(await call(
             'janzeer_subscribe', {'kind': s.kind, 'params': _resumeParams(s)}));
@@ -415,7 +416,8 @@ class JanzeerRpcWs extends RpcMethods {
       }
       if (h != null) {
         final last = sub.lastHeight;
-        if (last != null && h <= last) return; // replay overlap: exactly once by height
+        if (last != null && h <= last)
+          return; // replay overlap: exactly once by height
         sub.lastHeight = h;
       }
     }
