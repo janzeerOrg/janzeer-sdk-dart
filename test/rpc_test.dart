@@ -99,6 +99,7 @@ void main() {
     late HttpServer server;
     final sockets = <WebSocket>[];
     var subs = 0;
+    final fromHeights = <int?>[];
     setUpAll(() async {
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       server.listen((req) async {
@@ -128,6 +129,10 @@ void main() {
             case 'janzeer_subscribe':
               final id = 'sub${++subs}';
               final kind = (m['params'] as Map)['kind'];
+              final from = (((m['params'] as Map)['params'] as Map?) ??
+                  const {})['fromHeight'] as int?;
+              if (kind == 'newBlocks') fromHeights.add(from);
+              final height = (from != null && from > 11) ? from : 11;
               ws.add(reply(id));
               Future<void>.delayed(const Duration(milliseconds: 20), () {
                 if (ws.readyState != WebSocket.open) return;
@@ -140,7 +145,7 @@ void main() {
                     'result': kind == 'newBlocks'
                         ? {
                             'type': 'main',
-                            'height': 11,
+                            'height': height,
                             'hash': 'h2',
                             'previousHash': 'h',
                             'timestamp': 2,
@@ -198,7 +203,9 @@ void main() {
       expect(ws.connected, isTrue);
       expect(events, contains('WsResubscribed'));
       expect(sub.id, isNot(firstId));
-      expect(blocks.length, greaterThanOrEqualTo(2));
+      // the stream resumes right after the last delivered block: no replay from the original fromHeight, no duplicate
+      expect(fromHeights, [1, 12]);
+      expect(blocks, [11, 12]);
       expect(await sub.unsubscribe(), isTrue);
       await ws.close();
       expect(ws.connected, isFalse);

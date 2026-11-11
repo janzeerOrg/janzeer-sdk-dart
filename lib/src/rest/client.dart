@@ -101,7 +101,11 @@ class JanzeerClient {
         req.headers['Content-Type'] = 'application/json';
         req.body = jsonEncode(body);
       }
-      res = await http.Response.fromStream(await _http.send(req))
+      // ONE deadline for the whole exchange. The timeout used to wrap only the body read: `await _http.send(req)` (connect
+      // + headers) ran outside it, so a host that accepted the connection and never answered hung the call for ever.
+      res = await _http
+          .send(req)
+          .then(http.Response.fromStream)
           .timeout(_timeout);
     } on TimeoutException catch (e) {
       throw NetworkException(

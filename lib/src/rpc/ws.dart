@@ -113,6 +113,12 @@ class _LiveSub {
   final String kind;
   final Object params;
   final void Function(Object?) handler;
+
+  /// newBlocks only: height of the last block handed to the handler — where a resubscribe resumes
+  int? lastHeight;
+
+  /// true while the server-side subscription must be (re)created: set on reconnect, cleared when the call succeeds
+  bool stale = false;
   _LiveSub(this.id, this.kind, this.params, this.handler);
 }
 
@@ -140,6 +146,13 @@ class JanzeerRpcWs extends RpcMethods {
   bool _closedByUser = false;
   Duration _backoff;
   Future<void>? _connecting;
+  bool _everOpened = false;
+  Timer? _reconnectTimer;
+  Timer? _resubTimer;
+
+  /// notifications that arrived before their subscription id was registered (the answer and the first event can be
+  /// delivered back to back, ahead of the awaiting `_subscribe`)
+  final _orphans = <String, List<Object?>>{};
 
   JanzeerRpcWs._(this.url,
       {required bool reconnect,
@@ -171,7 +184,13 @@ class JanzeerRpcWs extends RpcMethods {
         timeout: timeout,
         connectTimeout: connectTimeout,
         onEvent: onEvent);
-    await c._open();
+    try {
+      await c._open();
+    } on Object {
+      // the caller never receives this object: it must not keep retrying in the background
+      await c.close();
+      rethrow;
+    }
     return c;
   }
 
@@ -228,6 +247,10 @@ class JanzeerRpcWs extends RpcMethods {
   /// Close the socket; no reconnect. Pending calls fail, subscriptions are dropped.
   Future<void> close() async {
     _closedByUser = true;
+    _reconnectTimer?.cancel();
+    _resubTimer?.cancel();
+    _reconnectTimer = _resubTimer = null;
+    _orphans.clear();
     _subs.clear();
     final ch = _channel;
     _channel = null;
@@ -247,6 +270,7 @@ class JanzeerRpcWs extends RpcMethods {
         await call('janzeer_subscribe', {'kind': kind, 'params': params}));
     final live = _LiveSub(id, kind, params, handler);
     _subs[id] = live;
+    _flushOrphans(live);
     return Subscription._(live, this);
   }
 
@@ -279,6 +303,7 @@ class JanzeerRpcWs extends RpcMethods {
         final ch = WebSocketChannel.connect(Uri.parse(url));
         await ch.ready.timeout(_connectTimeout);
         _channel = ch;
+        _everOpened = true;
         _backoff = _reconnectDelay;
         _listener = ch.stream.listen(
           (dynamic data) => _onMessage(
@@ -289,6 +314,9 @@ class JanzeerRpcWs extends RpcMethods {
         );
         _onEvent?.call(const WsOpen());
         done.complete();
+        for (final sub in _subs.values) {
+          sub.stale = true; // the server forgot them with the old socket
+        }
         unawaited(_resubscribe());
       } on Object catch (e) {
         _onEvent?.call(WsError(e));
@@ -312,33 +340,98 @@ class JanzeerRpcWs extends RpcMethods {
     if (willReconnect) _scheduleReconnect();
   }
 
+  /// ONE pending attempt at a time. Every failed open lands here, and every `call()` during an outage opens a socket:
+  /// without this guard each of them started its own endless retry chain.
   void _scheduleReconnect() {
+    if (_reconnectTimer != null || !_everOpened) return;
     final delay = _backoff;
     _backoff =
         Duration(milliseconds: (_backoff.inMilliseconds * 2).clamp(0, 30000));
-    Timer(delay, () {
+    _reconnectTimer = Timer(delay, () {
+      _reconnectTimer = null;
       if (_closedByUser || connected) return;
       _open().catchError((Object _) {});
     });
   }
 
+  /// Re-create every stale subscription. One that fails stays registered (and stale) and is tried again — it used to
+  /// be dropped for good, with an error event as the only trace.
   Future<void> _resubscribe() async {
-    final old = _subs.values.toList();
+    final old = _subs.values.where((s) => s.stale).toList();
     if (old.isEmpty) return;
-    _subs.clear();
     var count = 0;
+    var failed = 0;
     for (final s in old) {
+      if (!s.stale || !identical(_subs[s.id], s)) continue; // unsubscribed meanwhile, or done by a parallel pass
       try {
         final id = asString(await call(
-            'janzeer_subscribe', {'kind': s.kind, 'params': s.params}));
+            'janzeer_subscribe', {'kind': s.kind, 'params': _resumeParams(s)}));
+        if (!identical(_subs[s.id], s)) {
+          // the caller unsubscribed while we were asking
+          unawaited(call('janzeer_unsubscribe', {'subscription': id})
+              .then<void>((_) {}, onError: (Object _) {}));
+          continue;
+        }
+        _subs.remove(s.id);
         s.id = id;
+        s.stale = false;
         _subs[id] = s;
+        _flushOrphans(s);
         count++;
       } on Object catch (e) {
+        failed++;
         _onEvent?.call(WsError(e));
       }
     }
     if (count > 0) _onEvent?.call(WsResubscribed(count));
+    if (failed > 0 && !_closedByUser && _resubTimer == null) {
+      // still connected: try the rest again shortly (a new reconnect marks everything stale and runs this anyway)
+      _resubTimer = Timer(const Duration(seconds: 2), () {
+        _resubTimer = null;
+        if (connected) unawaited(_resubscribe());
+      });
+    }
+  }
+
+  /// A newBlocks stream resumes right after the last block it delivered: the original `fromHeight` would replay every
+  /// block again, and without one the blocks committed during the outage would be skipped.
+  Object _resumeParams(_LiveSub s) {
+    final last = s.lastHeight;
+    final params = s.params;
+    if (s.kind != 'newBlocks' || last == null || params is! Map) return params;
+    return <String, Object?>{
+      for (final e in params.entries) '${e.key}': e.value,
+      'fromHeight': last + 1
+    };
+  }
+
+  void _deliver(_LiveSub sub, Object? result) {
+    if (sub.kind == 'newBlocks' && result is Map<String, Object?>) {
+      int? h;
+      try {
+        h = asInt(result['height']);
+      } on Object {
+        h = null;
+      }
+      if (h != null) {
+        final last = sub.lastHeight;
+        if (last != null && h <= last) return; // replay overlap: exactly once by height
+        sub.lastHeight = h;
+      }
+    }
+    try {
+      sub.handler(result);
+    } on Object catch (e) {
+      _onEvent?.call(WsError(e));
+    }
+  }
+
+  void _flushOrphans(_LiveSub sub) {
+    final held = _orphans.remove(sub.id);
+    if (held == null) return;
+    for (final r in held) {
+      _deliver(sub, r);
+    }
   }
 
   void _onMessage(String text) {
@@ -354,12 +447,15 @@ class JanzeerRpcWs extends RpcMethods {
       if (m['method'] == 'janzeer_subscription' &&
           m['params'] is Map<String, Object?>) {
         final p = m['params'] as Map<String, Object?>;
-        final sub = _subs[asOptString(p['subscription'])];
-        if (sub != null && p.containsKey('result')) {
-          try {
-            sub.handler(p['result']);
-          } on Object catch (e) {
-            _onEvent?.call(WsError(e));
+        final subId = asOptString(p['subscription']);
+        final sub = _subs[subId];
+        if (p.containsKey('result') && subId != null) {
+          if (sub != null) {
+            _deliver(sub, p['result']);
+          } else if (_orphans.length < 32 || _orphans.containsKey(subId)) {
+            // not registered yet: the subscribe answer is still on its way to the awaiting `_subscribe`
+            final held = _orphans.putIfAbsent(subId, () => <Object?>[]);
+            if (held.length < 256) held.add(p['result']);
           }
         }
         continue;

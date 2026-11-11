@@ -34,7 +34,13 @@ Future<TxView> waitForFinality(Object source, String hash,
   TxView? last;
   while (DateTime.now().isBefore(deadline)) {
     if (source is JanzeerClient) {
-      last = await _restView(source, hash);
+      // already accepted: a dropped poll is retried until the deadline, like the RPC branch below
+      try {
+        last = await _restView(source, hash);
+      } on NetworkException {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        continue;
+      }
       if (last?.isFinal ?? false) return last!;
       await Future<void>.delayed(poll);
     } else if (source is RpcMethods) {
