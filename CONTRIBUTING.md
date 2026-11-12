@@ -35,3 +35,7 @@ Against any other network set `JANZEER_NODE_URL`, `JANZEER_RPC_URL`, `JANZEER_WS
 - Every new node method gets a typed wrapper in `lib/src/rpc/methods.dart` or `lib/src/rest/client.dart`, a model,
   a unit test with a mocked transport, and a line in `CHANGELOG.md`.
 - Public API says *validator*; *promoter* only survives in `crypto.dart`.
+
+## Bounties
+
+Some issues carry a bounty paid in JNZ: see [BOUNTIES.md](BOUNTIES.md).
