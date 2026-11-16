@@ -22,9 +22,6 @@ Future<void> main() async {
       print(
         'block ${b.height} ${b.hash.substring(0, 12)} producer=${b.producer} txs=${b.transactionsCount}',
       );
-      if (seen >= maxBlocks) {
-        // allow the main flow to exit on the next timer tick
-      }
     },
   );
 

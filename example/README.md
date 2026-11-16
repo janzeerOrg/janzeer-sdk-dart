@@ -11,6 +11,7 @@ funded wallet, and `tool/run_examples.sh` runs all five.
 | [`token_create_and_transfer.dart`](token_create_and_transfer.dart) | Create a JZT-1 token, then move units of it. |
 | [`register_validator.dart`](register_validator.dart) | Build and send the validator registration transaction (2000 JNZ deposit). |
 | [`vault_roundtrip.dart`](vault_roundtrip.dart) | Encrypt a secret into the portable vault format and open it again. |
+| [`watch_new_blocks.dart`](watch_new_blocks.dart) | Subscribe over WebSocket and print new blocks until a time or block-count limit. |
 
 The shortest possible program:
 
