@@ -5,6 +5,7 @@ All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](htt
 
 ## 0.1.12 — 2026-11-17
 
+- **New example `example/accept_payment.dart`**: accept a payment by watching an address over WebSocket, matching the invoice memo and amount, and confirming finality with `waitForFinality`. Contributed by @genda-benjamin. No library change.
 - **New example `example/offline_sign_and_broadcast.dart`**: three-step flow to query nonce online, sign offline into a file with no network calls, broadcast with `sendRawTransaction` and await finality. Contributed by @genda-benjamin (#8, #10). No library change.
 
 ## 0.1.11 — 2026-11-16

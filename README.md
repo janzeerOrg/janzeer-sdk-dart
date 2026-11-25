@@ -68,7 +68,8 @@ cryptography is pure Dart (`pointycastle`).
 
 ## Examples
 
-`example/`: [quickstart transfer](example/quickstart_transfer.dart), address-activity subscription, token
+`example/`: [quickstart transfer](example/quickstart_transfer.dart), [offline sign and broadcast](example/offline_sign_and_broadcast.dart),
+[accept payment](example/accept_payment.dart), [watch new blocks](example/watch_new_blocks.dart), address-activity subscription, token
 create + transfer, validator registration (dry run), vault round trip. `tool/run_examples.sh` runs them against
 the network in `JANZEER_NODE_URL`.
 

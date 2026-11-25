@@ -1,13 +1,14 @@
 # janzeer_sdk examples
 
-Seven small programs, each a complete flow against a running node. Point them at a network with
+Eight small programs, each a complete flow against a running node. Point them at a network with
 `JANZEER_NODE_URL` (default `http://localhost:7019`); `sdk_conformance/e2e/node-up.sh` starts a local one with a
-funded wallet, and `tool/run_examples.sh` runs all seven.
+funded wallet, and `tool/run_examples.sh` runs all eight.
 
 | Program | What it shows |
 |---|---|
 | [`quickstart_transfer.dart`](quickstart_transfer.dart) | Open a wallet from a mnemonic, read balance and nonce, sign and submit a transfer, wait for finality. |
 | [`offline_sign_and_broadcast.dart`](offline_sign_and_broadcast.dart) | Three-step flow: query nonce online, sign offline into file with no network calls, broadcast and await finality. |
+| [`accept_payment.dart`](accept_payment.dart) | Accept a payment: watch an address over WebSocket, match invoice memo and amount, confirm finality. |
 | [`watch_new_blocks.dart`](watch_new_blocks.dart) | WebSocket subscription: stream newly finalized blocks as they arrive. |
 | [`subscribe_address_activity.dart`](subscribe_address_activity.dart) | WebSocket subscription: live blocks and the transactions that touch one address. |
 | [`token_create_and_transfer.dart`](token_create_and_transfer.dart) | Create a JZT-1 token, then move units of it. |
