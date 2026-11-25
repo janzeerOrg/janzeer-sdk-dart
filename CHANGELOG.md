@@ -3,9 +3,15 @@
 All notable changes to `janzeer_sdk` are documented here ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [SemVer](https://semver.org/)).
 
-## 0.1.12 — 2026-11-17
+## 0.1.13 — 2026-11-25
+
+Verified against node **0.1.15** (API 1.1.0 / protocol 3.4.0). No library change.
 
 - **New example `example/accept_payment.dart`**: accept a payment by watching an address over WebSocket, matching the invoice memo and amount, and confirming finality with `waitForFinality`. Contributed by @genda-benjamin. No library change.
+- `SpecVersion.node` is **0.1.15** (node 0.1.15: consensus safety release, vote lock active from block #357,023; API 1.1.0 unchanged, wire protocol 3.4.0 until that block and 3.5.0 from it. The SDK speaks HTTP only, so nothing changes for applications).
+
+## 0.1.12 — 2026-11-17
+
 - **New example `example/offline_sign_and_broadcast.dart`**: three-step flow to query nonce online, sign offline into a file with no network calls, broadcast with `sendRawTransaction` and await finality. Contributed by @genda-benjamin (#8, #10). No library change.
 
 ## 0.1.11 — 2026-11-16
